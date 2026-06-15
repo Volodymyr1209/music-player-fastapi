@@ -1,0 +1,44 @@
+# Python-generated files
+
+**pycache**/
+*.py[cod]
+*.pyo
+
+# Build files
+
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environment
+
+.venv/
+
+# Environment variables
+
+.env
+.env.*
+
+# IDE
+
+.idea/
+.vscode/
+
+# OS files
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+# Ruff
+
+.ruff_cache/
+
+# Pytest
+
+.pytest_cache/
+
