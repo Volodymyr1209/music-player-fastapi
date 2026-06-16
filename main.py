@@ -1,23 +1,9 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, HTTPException, status
 
-from models import Base
 from routers.artists import router as artists_router
-from settings.db import engine, ping
+from settings.db import ping
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    yield
-
-    await engine.dispose()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.include_router(artists_router)
 

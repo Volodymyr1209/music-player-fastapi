@@ -1,26 +1,21 @@
 import logging
-from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.artist import Artist
 from schemas.artist import ArtistCreate, ArtistRead, ArtistUpdate
-from settings.db import get_db
+from services.artists import ArtistService, get_artist_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/artists", tags=["Artists"])
 
-SessionDepend = Annotated[AsyncSession, Depends(get_db)]
-
 
 @router.get("/", response_model=list[ArtistRead])
-async def get_artists(session: SessionDepend):
+async def get_artists(
+    artist_service: ArtistService = Depends(get_artist_service),
+):
     try:
-        result = await session.execute(select(Artist))
-        return result.scalars().all()
+        return await artist_service.get_all()
 
     except Exception as exc:
         logger.exception("Failed to get artists")
@@ -38,17 +33,10 @@ async def get_artists(session: SessionDepend):
 )
 async def create_artist(
     artist_data: ArtistCreate,
-    session: SessionDepend,
+    artist_service: ArtistService = Depends(get_artist_service),
 ):
     try:
-        artist = Artist(**artist_data.model_dump())
-
-        session.add(artist)
-
-        await session.commit()
-        await session.refresh(artist)
-
-        return artist
+        return await artist_service.create(artist_data)
 
     except Exception as exc:
         logger.exception("Failed to create artist")
@@ -65,12 +53,10 @@ async def create_artist(
 )
 async def get_artist(
     artist_id: str,
-    session: SessionDepend,
+    artist_service: ArtistService = Depends(get_artist_service),
 ):
     try:
-        result = await session.execute(select(Artist).where(Artist.id == artist_id))
-
-        artist = result.scalars().first()
+        artist = await artist_service.get_by_id(artist_id)
 
         if not artist:
             raise HTTPException(
@@ -99,24 +85,19 @@ async def get_artist(
 async def update_artist(
     artist_id: str,
     artist_update: ArtistUpdate,
-    session: SessionDepend,
+    artist_service: ArtistService = Depends(get_artist_service),
 ):
     try:
-        result = await session.execute(select(Artist).where(Artist.id == artist_id))
-
-        artist = result.scalars().first()
+        artist = await artist_service.update(
+            artist_id,
+            artist_update,
+        )
 
         if not artist:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Artist not found",
             )
-
-        for field, value in artist_update.model_dump(exclude_unset=True).items():
-            setattr(artist, field, value)
-
-        await session.commit()
-        await session.refresh(artist)
 
         return artist
 
@@ -138,21 +119,16 @@ async def update_artist(
 )
 async def delete_artist(
     artist_id: str,
-    session: SessionDepend,
+    artist_service: ArtistService = Depends(get_artist_service),
 ):
     try:
-        result = await session.execute(select(Artist).where(Artist.id == artist_id))
+        deleted = await artist_service.delete(artist_id)
 
-        artist = result.scalars().first()
-
-        if not artist:
+        if not deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Artist not found",
             )
-
-        await session.delete(artist)
-        await session.commit()
 
         return None
 
