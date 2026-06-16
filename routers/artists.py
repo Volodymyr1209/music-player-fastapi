@@ -1,9 +1,11 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 
 from schemas.artist import ArtistCreate, ArtistRead, ArtistUpdate
 from services.artists import ArtistService, get_artist_service
+from services.pdf_generator import generate_artist_report
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,35 @@ async def create_artist(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create artist",
+        ) from exc
+
+
+@router.get("/report")
+async def get_artists_report(
+    artist_service: ArtistService = Depends(get_artist_service),
+):
+    try:
+        artists = await artist_service.get_all()
+
+        artist_lines = [f"{artist.name} ({artist.country})" for artist in artists]
+
+        pdf_path = generate_artist_report(
+            "artists_report.pdf",
+            artist_lines,
+        )
+
+        return FileResponse(
+            path=pdf_path,
+            filename="artists_report.pdf",
+            media_type="application/pdf",
+        )
+
+    except Exception as exc:
+        logger.exception("Failed to generate report")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate report",
         ) from exc
 
 
