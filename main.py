@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 
 from models import Base
+from routers.artists import router as artists_router
 from settings.db import engine, ping
 
 
@@ -17,6 +18,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(artists_router)
 
 
 @app.get("/")
