@@ -1,11 +1,14 @@
 import logging
 
+from authx import RequestToken
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
+from dependencies.auth import oauth2_scheme
 from schemas.artist import ArtistCreate, ArtistRead, ArtistUpdate
 from services.artists import ArtistService, get_artist_service
 from services.pdf_generator import generate_artist_report
+from utils.security import security
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,12 @@ async def get_artists(
 )
 async def create_artist(
     artist_data: ArtistCreate,
-    artist_service: ArtistService = Depends(get_artist_service),
+    token: str = Depends(
+        oauth2_scheme,
+    ),
+    artist_service: ArtistService = Depends(
+        get_artist_service,
+    ),
 ):
     try:
         return await artist_service.create(artist_data)
@@ -150,9 +158,20 @@ async def update_artist(
 )
 async def delete_artist(
     artist_id: str,
-    artist_service: ArtistService = Depends(get_artist_service),
+    token: str = Depends(
+        oauth2_scheme,
+    ),
+    artist_service: ArtistService = Depends(
+        get_artist_service,
+    ),
 ):
     try:
+        # if token.role != "admin":
+        #     raise HTTPException(
+        #         status_code=status.HTTP_403_FORBIDDEN,
+        #         detail="Admin access required",
+        #     )
+
         deleted = await artist_service.delete(artist_id)
 
         if not deleted:
