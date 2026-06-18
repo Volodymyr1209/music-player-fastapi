@@ -77,39 +77,74 @@ Music Player API — це вебзастосунок для завантажен
 ```text
 music-player/
 │
-├── database/
-│   ├── database.py
-│   └── session.py
+├── alembic/
+│   ├── versions/
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
+│
+├── dependencies/
+│   └── auth.py
+│
+├── fonts/
+│   └── DejaVuSans.ttf
 │
 ├── models/
+│   ├── __init__.py
+│   ├── base.py
 │   ├── artist.py
 │   ├── album.py
 │   ├── track.py
 │   ├── playlist.py
+│   ├── playlist_track.py
 │   └── user.py
 │
 ├── routers/
+│   ├── artists.py
+│   ├── auth.py
+│   ├── files.py
 │   └── tracks.py
 │
 ├── schemas/
-│   └── track.py
+│   ├── artist.py
+│   ├── track.py
+│   └── user.py
 │
 ├── services/
-│   └── tracks.py
+│   ├── artists.py
+│   ├── tracks.py
+│   ├── users.py
+│   └── pdf_generator.py
+│
+├── settings/
+│   └── configs/
+│       └── app.py
 │
 ├── templates/
 │   └── player.html
 │
 ├── uploads/
 │   └── music/
+│       ├── sadsvit-personazhi-(meloua.com).mp3
+│       └── Океан Ельзи - 911.mp3
 │
-├── alembic/
+├── utils/
+│   ├── __init__.py
+│   └── security.py
 │
-├── main.py
-├── Dockerfile
+├── .env
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .python-version
+├── alembic.ini
 ├── docker-compose.yml
+├── Dockerfile
+├── img.png
+├── main.py
 ├── pyproject.toml
-└── README.md
+├── README.md
+├── structure.txt
+└── uv.lock
 ```
 
 ---
